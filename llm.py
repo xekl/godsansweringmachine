@@ -1,6 +1,5 @@
 
 from strings import *
-from constants import *
 
 from groq import Groq
 groq_client = Groq(api_key=GROQ_API_KEY)
