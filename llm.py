@@ -1,8 +1,9 @@
 
+import streamlit as st
 from strings import *
 
 from groq import Groq
-groq_client = Groq(api_key=GROQ_API_KEY)
+groq_client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 # llm interface: groq
 def generate_groq_ressponse(inputs, model="llama-3.1-70b-versatile", max_tokens=500, temperature=1.0):
