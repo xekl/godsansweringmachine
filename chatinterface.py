@@ -13,6 +13,7 @@ from game import *
 
 if "session_id" not in st.session_state.keys():
     st.session_state.session_id = random.randint(0, 1000000)
+    print("------- ---- ------- ---- ------- ---- ------- ---- new session", st.session_state.session_id)
 
 if "messages" not in st.session_state.keys():
     st.session_state.messages = [{"role": "assistant", "content": "... H- Hello? God? I need to tell you something."}]
@@ -58,6 +59,13 @@ if "selected_counts" not in st.session_state.keys(): # collects how often each t
 
 # ---- helpers ----
 
+# log conversation via printouts
+def log_with_print(role, message):
+    if role == "user":
+       print("- (" , st.session_state.session_id, ") user    :", message)
+    else:
+       print("- (" , st.session_state.session_id, ") caller  :", message)
+
 # chat response generator with fake streaming
 def prayer_generator(speed=0.05):
 
@@ -68,6 +76,9 @@ def prayer_generator(speed=0.05):
 
     # generate response
     prayer = generate_groq_ressponse(chat_history)
+
+    # log via printout
+    log_with_print("caller", prayer)
 
     # stream-print response 
     for word in prayer.split():
@@ -81,17 +92,20 @@ def handle_user_input():
     with st.chat_message("user"): 
         st.markdown(user_input)
 
+    # log via printout
+    log_with_print("user", user_input)
+
     # add message to history
     st.session_state.messages.append({"role": "user", "content": user_input})
 
     # check for sin/virtue
     user_moral = detect_trait(user_input).strip().lower()
-    print("user moral detected:", user_moral)
+    #print("user moral detected:", user_moral)
     if user_moral in st.session_state.selected_counts:
-        print("selected count", user_moral)
+    #    print("selected count", user_moral)
         st.session_state.selected_counts[user_moral] += 1
-    else: 
-        print(user_moral, "is STILL not in selected_counts")
+    #else: 
+    #    print(user_moral, "is STILL not in selected_counts")
 
     # generate and display response 
     with st.chat_message("assistant"):
@@ -137,6 +151,7 @@ with st.sidebar:
         # let them react according to current conversation state
 
         # then remove all existing messages and start with a new caller
+        st.session_state.pop("session_id")
         st.session_state.messages = st.session_state.messages = [{"role": "assistant", "content": "... H- Hello? God? I need to tell you something."}]
         st.session_state.caller_evilness = random.randint(1, 10)
         st.rerun()
