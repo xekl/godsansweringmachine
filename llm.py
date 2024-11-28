@@ -6,7 +6,7 @@ from groq import Groq
 groq_client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 # llm interface: groq
-def generate_groq_ressponse(inputs, model="llama-3.1-70b-versatile", max_tokens=500, temperature=1.0):
+def generate_groq_response(inputs, model="llama-3.1-70b-versatile", max_tokens=500, temperature=1.0):
 
     # generate via groq API
     response = groq_client.chat.completions.create(
@@ -24,15 +24,3 @@ def generate_groq_ressponse(inputs, model="llama-3.1-70b-versatile", max_tokens=
         result = response
 
     return result
-
-# moral compass
-
-def detect_trait(user_input):
-
-    # collect system prompt + chat history
-    chat_history = [{"role": "system", "content": trait_classifier_prompt},
-                   {"role": "user", "content": user_input}]
-
-    # assess user input morally
-    moral = generate_groq_ressponse(chat_history, max_tokens = 5, temperature = 0.1)
-    return moral

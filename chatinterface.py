@@ -21,25 +21,8 @@ if "messages" not in st.session_state.keys():
 if "caller_evilness" not in st.session_state.keys():
     st.session_state.caller_evilness = random.randint(1, 10)
 
-if "proposed_counts" not in st.session_state.keys(): # collects how often each trait has been offered in a scenario
-    st.session_state.proposed_counts = {
-        "Charity": 0,
-        "Faith": 0,
-        "Fortitude": 0,
-        "Hope": 0,
-        "Justice": 0,
-        "Prudence": 0,
-        "Temperance": 0,
-        "Envy": 0,
-        "Gluttony": 0,
-        "Greed": 0,
-        "Lust": 0,
-        "Pride": 0,
-        "Sloth": 0,
-        "Wrath": 0,
-    }
-if "selected_counts" not in st.session_state.keys(): # collects how often each trait has been chosen in an answer
-    st.session_state.selected_counts = {
+if "trait_counts" not in st.session_state.keys(): # collects how often each trait has been offered in a scenario
+    st.session_state.trait_counts = {
         "charity": 0,
         "faith": 0,
         "fortitude": 0,
@@ -57,6 +40,15 @@ if "selected_counts" not in st.session_state.keys(): # collects how often each t
         "neutral": 0,
     }
 
+if "caller_system_prompt" not in st.session_state.keys():
+    trait_1, trait_2 = select_next_trait_pair(st.session_state.trait_counts)
+    #st.session_state.trait_counts[trait_1] = st.session_state.trait_counts.get(trait_1, 0) + 1
+    #st.session_state.trait_counts[trait_2] = st.session_state.trait_counts.get(trait_2, 0) + 1
+    st.session_state.caller_system_prompt = build_prayer_prompt(trait_1, trait_2, st.session_state.caller_evilness)
+    print(st.session_state.trait_counts)
+    print(st.session_state.caller_system_prompt)
+
+
 # ---- helpers ----
 
 # log conversation via printouts
@@ -70,12 +62,12 @@ def log_with_print(role, message):
 def prayer_generator(speed=0.05):
 
     # collect system prompt + chat history
-    chat_history = [{"role": "system", "content": build_prayer_prompt(st.session_state.caller_evilness)},]
+    chat_history = [{"role": "system", "content": st.session_state.caller_system_prompt},]
     for message in st.session_state.messages:
         chat_history.append(message)
 
     # generate response
-    prayer = generate_groq_ressponse(chat_history)
+    prayer = generate_groq_response(chat_history)
 
     # log via printout
     log_with_print("caller", prayer)
@@ -99,13 +91,13 @@ def handle_user_input():
     st.session_state.messages.append({"role": "user", "content": user_input})
 
     # check for sin/virtue
-    user_moral = detect_trait(user_input).strip().lower()
+    user_moral = detect_trait_in_user_utterance(st.session_state.messages[-2:]).strip().lower()
     #print("user moral detected:", user_moral)
-    if user_moral in st.session_state.selected_counts:
+    if user_moral in st.session_state.trait_counts:
     #    print("selected count", user_moral)
-        st.session_state.selected_counts[user_moral] += 1
+        st.session_state.trait_counts[user_moral] += 1
     #else: 
-    #    print(user_moral, "is STILL not in selected_counts")
+    #    print(user_moral, "is STILL not in trait_counts")
 
     # generate and display response 
     with st.chat_message("assistant"):
@@ -152,6 +144,7 @@ with st.sidebar:
 
         # then remove all existing messages and start with a new caller
         st.session_state.pop("session_id")
+        st.session_state.pop("caller_system_prompt")
         st.session_state.messages = st.session_state.messages = [{"role": "assistant", "content": "... H- Hello? God? I need to tell you something."}]
         st.session_state.caller_evilness = random.randint(1, 10)
         st.rerun()
@@ -160,7 +153,7 @@ with st.sidebar:
     caller_evilness = st.slider("Caller Evilness", 1, 10, value=st.session_state.caller_evilness, disabled=True)
     if caller_evilness:
         st.session_state.caller_evilness = caller_evilness
-    st.markdown(st.session_state.selected_counts)
+    st.markdown(st.session_state.trait_counts)
     
     # store conversation
     conversation_as_text = ""
