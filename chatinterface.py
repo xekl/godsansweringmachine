@@ -9,6 +9,7 @@ from llm import *
 from strings import *
 from game import *
 
+
 # ---- init session state ----
 
 if "session_id" not in st.session_state.keys():
@@ -50,6 +51,17 @@ if "caller_system_prompt" not in st.session_state.keys():
 
 
 # ---- helpers ----
+
+# restart a session 
+def restart_session():
+
+    # remove all existing messages and start with a new caller
+    st.session_state.pop("session_id")
+    st.session_state.pop("caller_system_prompt")
+    st.session_state.messages = st.session_state.messages = [{"role": "assistant", "content": "... H- Hello? God? I need to tell you something."}]
+    st.session_state.caller_evilness = random.randint(1, 10)
+
+    st.rerun()
 
 # log conversation via printouts
 def log_with_print(role, message):
@@ -111,6 +123,31 @@ def handle_user_input():
     # rebuild page
     st.rerun()
 
+# end one prayer conversation 
+def hang_up_on_caller():
+
+    # when hanging up, send message to caller that god is hanging up 
+    # let them react according to current conversation state
+
+    # display user message immediately
+    with st.chat_message("user"): 
+        st.markdown("(Hanging up)")
+
+    # add hang-up message to history
+    st.session_state.messages.append({"role": "user", "content": "(God is hanging up the phone. If you feel the conversation is done, you don't need to respond, otherwise this is your last chance to say something.)"})
+    
+    # TODO check for moral here, too?
+
+    # generate and display response 
+    with st.chat_message("assistant"):
+        st.write_stream(prayer_generator())
+    # wait a little 
+    time.sleep(0.5)
+
+    # end session by starting a new one
+    restart_session()
+
+
 # ---- streamlit page ---- 
 
 st.set_page_config(page_title="GOD'S ANSWERING MACHINE", layout="centered", initial_sidebar_state="expanded")
@@ -132,28 +169,26 @@ user_input = st.chat_input("What to say?")
 # handle user input 
 if user_input:
     handle_user_input()
-    
+
+if st.button("Hang up"):
+    # TODO place next to chat line?
+    hang_up_on_caller()
+
 # sidebar with info
 with st.sidebar:
     #progress_bar = st.progress(0, text="Progress...")
     st.markdown("## Caller")
     st.markdown("... caller info ...")
-    if st.button("Next caller"):
-        # TODO when hanging up, send message to caller that god is hanging up 
-        # let them react according to current conversation state
-
-        # then remove all existing messages and start with a new caller
-        st.session_state.pop("session_id")
-        st.session_state.pop("caller_system_prompt")
-        st.session_state.messages = st.session_state.messages = [{"role": "assistant", "content": "... H- Hello? God? I need to tell you something."}]
-        st.session_state.caller_evilness = random.randint(1, 10)
-        st.rerun()
     
     st.markdown("## Debugging")
     caller_evilness = st.slider("Caller Evilness", 1, 10, value=st.session_state.caller_evilness, disabled=True)
     if caller_evilness:
         st.session_state.caller_evilness = caller_evilness
     st.markdown(st.session_state.trait_counts)
+
+    if st.button("Next caller"):
+        # shortcut to end conversation
+        restart_session() # end session by starting a new one
     
     # store conversation
     conversation_as_text = ""
