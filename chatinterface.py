@@ -49,6 +49,9 @@ if "caller_system_prompt" not in st.session_state.keys():
     print(st.session_state.trait_counts)
     print(st.session_state.caller_system_prompt)
 
+if "caller_number" not in st.session_state.keys():
+    st.session_state.caller_number = 1 # start with first caller
+
 
 # ---- helpers ----
 
@@ -56,6 +59,7 @@ if "caller_system_prompt" not in st.session_state.keys():
 def restart_session():
 
     # remove all existing messages and start with a new caller
+    st.session_state.caller_number += 1
     st.session_state.pop("session_id")
     st.session_state.pop("caller_system_prompt")
     st.session_state.messages = st.session_state.messages = [{"role": "assistant", "content": "... H- Hello? God? I need to tell you something."}]
@@ -178,6 +182,7 @@ if st.button("Hang up"):
 with st.sidebar:
     #progress_bar = st.progress(0, text="Progress...")
     st.markdown("## Caller")
+    st.markdown("- caller no.: " + str(st.session_state.caller_number))
     st.markdown("... caller info ...")
     
     st.markdown("## Debugging")
