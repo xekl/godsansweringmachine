@@ -6,7 +6,7 @@ human_description_evilness_1 = "Your evilness is: "
 human_description_evilness_2 = " out of 10. "
 human_description_trait_1 = "Your problem revolves around a conflict between your "
 human_description_trait_2 = " and your "
-human_description_instructions = ". You are not consciously aware of your traits, instead, you are facing a concrete problem in which their conflict presents itself for which you seek advice. Keep your turns short and ask for god's input and guidance to explore your problem."
+human_description_instructions = ". You are not consciously aware of your traits, instead, you are facing a concrete problem in which their conflict presents itself for which you seek advice. Keep your turns short and ask for god's input and guidance to explore your problem. Your own moral compass is confused and you are easily influenced by God's answers, as they must know best."
 
 
 # sins and virtues
